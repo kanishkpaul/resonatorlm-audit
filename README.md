@@ -11,7 +11,7 @@ This repository contains an independent, from-scratch replication, mathematical 
 ## What We Found
 
 1. **Replication Confirmed (Directional)**: Under the paper's 6M-parameter budget on WikiText-2 (raw characters), ResonatorLM achieves a test perplexity of 3.322 and top-1 accuracy of 64.33%, ahead of the parameter-matched Transformer baseline (3.400 PPL, 63.62%). This reproduces the paper's *ordering*, not its absolute values: we train for 2,000 steps on a single seed against the paper's 10,000 steps over six seeds, and both of our models land well below the paper's reported perplexities (3.764 ResonatorLM, 4.617 Transformer). See [Reproduction Protocol](#reproduction-protocol) for the exact budget and what it does and does not license.
-2. **Decoding Memory is Truly Constant**: The resonant state is 2.0 KiB per layer, matching the paper's $B 	imes H 	imes d_h 	imes 2$ figure. Decoding also carries a 3.0 KiB per-layer ring buffer for the $K=3$ depthwise local path, so the full decode cache is 5.0 KiB per layer and 30.0 KiB for the 6-layer model. Both parts are constant in sequence length, which is the claim that matters. That footprint remains unchanged whether the prompt has 2,048 tokens or 32,768 tokens.
+2. **Decoding Memory is Truly Constant**: The resonant state is 2.0 KiB per layer, matching the paper's $B \times H \times d_h \times 2$ figure. Decoding also carries a 3.0 KiB per-layer ring buffer for the $K=3$ depthwise local path, so the full decode cache is 5.0 KiB per layer and 30.0 KiB for the 6-layer model. Both parts are constant in sequence length, which is the claim that matters. That footprint remains unchanged whether the prompt has 2,048 tokens or 32,768 tokens.
 3. **The Transformer Collapse is a Positional-Encoding Artifact**: The paper's collapse at 1024 context reproduces only with learned absolute positional embeddings evaluated beyond the training horizon ($T=256$). Swapping in Rotary Position Embeddings (RoPE) at the same parameter budget removes it: 5.59 PPL at 1024 instead of 20.00, a 3.6x difference. That effect is large and robust. Two things it does **not** show: at $T=256$ RoPE measures 3.210 against ResonatorLM's 3.322, but on a single seed that 0.112 gap is roughly 1.6 standard deviations of the paper's own reported Transformer seed spread ($\pm 0.070$), so we treat it as a tie rather than a win; and at 1024 ResonatorLM is still clearly ahead (3.293 vs 5.588). ResonatorLM's zero-shot length generalization is real. What the RoPE control removes is the *catastrophic* reading of the baseline, not ResonatorLM's extrapolation advantage.
 4. **ResonatorLM is a Diagonal Complex State-Space Model**: Stripping away the physical terminology ("damped resonant fields", "eigenmodes") reveals an architecture mathematically and numerically identical to a 1D complex diagonal SSM (such as S4D-Lin or LRU) with single conjugate pole pairs, bounded identity-residual head coupling, and Mamba-style local gating.
 5. **Phase Sign Error in Equation (4)**: Equation (4) defines $\hat{y}_{t+1} = \Re(e^{-i\phi} s_{t+1})$, which evaluates to $\cos(\omega t - \phi)$. This conflicts with the convolution kernel $\cos(\omega t + \phi)$ in Equation (1), causing an order-one numerical mismatch (we measure between 1.64 and 2.77 depending on the drive sequence; the magnitude is input-dependent, the discrepancy is not). Changing the sign to $e^{+i\phi}$ resolves the error to machine precision ($< 10^{-14}$) on every input we tried.
@@ -109,18 +109,39 @@ This repository contains an independent scientific reproduction and audit of arX
 
 ---
 
-## How to Run the Tests
+## How to Run It
 
-The data pipeline test reads `data/wikitext-2-raw/`, which is gitignored (see *Note on artifacts* above). Place `wiki.{train,valid,test}.raw` there before running the suite, and the context sweep additionally needs the trained checkpoints.
+Everything here was built and run on an Apple M5 MacBook (PyTorch on the `mps`
+backend). With [uv](https://docs.astral.sh/uv/):
 
 ```bash
-# Run all unit tests (kernel correctness, SSM equivalence, parameter parity)
-python -m unittest discover -s tests/ -v
+uv venv -p 3.12 && source .venv/bin/activate
+uv pip install -e .
 
-# Run memory, latency, and decay benchmarks
+# Kernel correctness, SSM equivalence, parameter parity (no data needed)
+python -m unittest discover -s tests/ -v
+```
+
+On a fresh clone 15 of the 16 tests pass immediately. The remaining one,
+`test_data`, reads `data/wikitext-2-raw/`, which is gitignored (see *Note on
+artifacts* above). Place `wiki.{train,valid,test}.raw` there to run it and to
+train.
+
+```bash
+# Memory, latency, and decay benchmarks
 python -m src.benchmark
 python -m src.synthetic_retrieval
 
-# Evaluate models across context lengths (256, 512, 1024)
+# Train the three models used in the results table (2,000 steps each)
+python -m src.train --model resonator --steps 2000 --seed 0
+python -m src.train --model transformer --pos_encoding learned --steps 2000 --seed 0
+python -m src.train --model transformer --pos_encoding rope --steps 2000 --seed 0
+
+# Evaluate across context lengths (256, 512, 1024); needs the checkpoints
 python -m scripts.eval_context_sweep
 ```
+
+`scripts/benchmark_l4.py` reproduces the paper's L4 timing protocol (bf16,
+2 warmups, 5 timed iterations) for anyone with an NVIDIA GPU. Timings from the
+Mac are only used for ratios and trends, never compared to the paper's absolute
+L4 numbers.
