@@ -126,7 +126,7 @@ With output vector $C = \begin{pmatrix} \cos\phi & -\sin\phi \end{pmatrix}$:
 $$y_{t+1} = C x_{t+1} = \cos\phi a_{t+1} - \sin\phi b_{t+1} = \Re(e^{+i\phi} s_{t+1})$$
 
 ### Numerical Identity
-We implemented this exact state-space formulation in [`src/ssm.py`](src/ssm.py) and evaluated it against `ResonantFieldMixer` in [`tests/test_ssm.py`](file:///Users/kanishk/Downloads/GitHub/testal109/tests/test_ssm.py):
+We implemented this exact state-space formulation in [`src/ssm.py`](src/ssm.py) and evaluated it against `ResonantFieldMixer` in [`tests/test_ssm.py`](tests/test_ssm.py):
 $$\max |y_{\text{Resonator}} - y_{\text{SSM}}| = 1.51 \times 10^{-14}$$
 ResonatorLM is structurally and algebraically a **diagonal complex State-Space Model with single conjugate pole pairs and polar initialization**.
 
