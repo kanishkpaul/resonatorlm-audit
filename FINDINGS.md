@@ -101,8 +101,8 @@ Here is what happens to signal amplitude $A(t) = 2^{-t / t_{1/2}}$ as distance i
 - At 2,048 tokens: 50.0% amplitude remains.
 - At 8,192 tokens (4 half-lives): 6.25% amplitude remains.
 - At 32,768 tokens (16 half-lives): 0.0015% amplitude remains ($1.5 \times 10^{-5}$).
-- At 100,000 tokens (48.8 half-lives): amplitude drops to $2.0 	imes 10^{-15}$. That is still exactly representable in float32 (whose smallest normal is $1.18 	imes 10^{-38}$), so the problem is signal to noise, not representability.
-- At 1,000,000 tokens (488 half-lives): amplitude drops to $1.03 	imes 10^{-147}$. Representable in float64, identically zero in float32 or bfloat16, and far below any conceivable signal floor in either.
+- At 100,000 tokens (48.8 half-lives): amplitude drops to $2.0 \times 10^{-15}$. That is still exactly representable in float32 (whose smallest normal is $1.18 \times 10^{-38}$), so the problem is signal to noise, not representability.
+- At 1,000,000 tokens (488 half-lives): amplitude drops to $1.03 \times 10^{-147}$. Representable in float64, identically zero in float32 or bfloat16, and far below any conceivable signal floor in either.
 
 Any linear time-invariant channel with exponential damping loses all signal long before 100,000 tokens. Unless the model adds undamped poles ($\alpha = 0$) or input-dependent selective gating that can stop decay on important tokens, it cannot retain memories across 1M context.
 

@@ -19,7 +19,7 @@ The model augments the core resonant convolution with:
 The paper evaluates a 6-layer, 6.04M-parameter ResonatorLM on WikiText-2 (character-level) against a parameter-matched 6-layer TransformerLM (6.11M parameters) trained on $T=256$ token windows. It claims:
 - Superior test perplexity (3.764 vs. 4.617) and accuracy (61.31% vs. 55.32%) at length 256, over six seeds.
 - Superior long-context quality: at 1024 it reports 4.502 for ResonatorLM against 11.022 for the Transformer. Note the paper's ResonatorLM does degrade with length (3.925 to 4.339 to 4.502); it is the Transformer that degrades far faster.
-- $O(1)$ recurrent memory during generation ($2.0	ext{ KiB}$ per layer of resonant state, $30.0	ext{ KiB}$ total decode cache for the 6-layer model including the local-path buffer).
+- $O(1)$ recurrent memory during generation ($2.0\text{ KiB}$ per layer of resonant state, $30.0\text{ KiB}$ total decode cache for the 6-layer model including the local-path buffer).
 - Up to $575\times$ speedup over quadratic causal attention at 32K context.
 - Constant per-step generation cost at long context (benchmarked to 32K; the paper makes no 1M claim).
 

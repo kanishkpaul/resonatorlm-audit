@@ -25,6 +25,6 @@
 - **Attention Reference**: PyTorch Scaled Dot-Product Attention (SDPA). The paper does not state which SDPA backend was selected, so we do not assume one.
 
 ## Evaluation Protocol Alignment
-In accordance with Rule 7:
+How to read local timings:
 - Local speed experiments on this Apple M5 host measure **scaling, relative ratios, and crossover trends** rather than direct reproduction of absolute NVIDIA L4 latency numbers.
 - A dedicated L4-compatible benchmark script matching the exact protocol (bf16, device synchronization, 5 timed iterations after 2 warmups) is provided for external execution.
