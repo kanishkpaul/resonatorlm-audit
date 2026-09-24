@@ -6,7 +6,7 @@
 **Replication Authors**: Independent ML Research Engineer & Technical Audit Team  
 **Training Budget**: 2,000 steps, batch 32, seq len 256, seed 0 (paper: 10,000 steps, six seeds)  
 **Date**: September 2026  
-**Repository**: [https://github.com/kanishkpaul/testal109](https://github.com/kanishkpaul/testal109)
+**Repository**: [https://github.com/kanishkpaul/resonatorlm-audit](https://github.com/kanishkpaul/resonatorlm-audit)
 
 ---
 
@@ -89,7 +89,7 @@ Correcting the phase factor to $e^{+i\phi}$:
 $$\Re(e^{+i\phi} s_{t+1}) = \sum_{\tau=0}^t e^{-\alpha(t-\tau)} \cos(\omega(t-\tau) + \phi) u_\tau \equiv y[t]$$
 
 ### Empirical Test Result
-In our unit test suite ([`tests/test_kernel.py`](file:///Users/kanishk/Downloads/GitHub/testal109/tests/test_kernel.py)):
+In our unit test suite ([`tests/test_kernel.py`](tests/test_kernel.py)):
 - Paper formula ($e^{-i\phi}$): Error = **2.7673** on the test's fixed drive (seed 42), **1.6417** on another draw (FAILED; magnitude is input-dependent)
 - Corrected formula ($e^{+i\phi}$): Error = **$4.44 \times 10^{-16}$** in float64, and **$< 10^{-6}$** in float32 (PASSED).
 
@@ -126,7 +126,7 @@ With output vector $C = \begin{pmatrix} \cos\phi & -\sin\phi \end{pmatrix}$:
 $$y_{t+1} = C x_{t+1} = \cos\phi a_{t+1} - \sin\phi b_{t+1} = \Re(e^{+i\phi} s_{t+1})$$
 
 ### Numerical Identity
-We implemented this exact state-space formulation in [`src/ssm.py`](file:///Users/kanishk/Downloads/GitHub/testal109/src/ssm.py) and evaluated it against `ResonantFieldMixer` in [`tests/test_ssm.py`](file:///Users/kanishk/Downloads/GitHub/testal109/tests/test_ssm.py):
+We implemented this exact state-space formulation in [`src/ssm.py`](src/ssm.py) and evaluated it against `ResonantFieldMixer` in [`tests/test_ssm.py`](file:///Users/kanishk/Downloads/GitHub/testal109/tests/test_ssm.py):
 $$\max |y_{\text{Resonator}} - y_{\text{SSM}}| = 1.51 \times 10^{-14}$$
 ResonatorLM is structurally and algebraically a **diagonal complex State-Space Model with single conjugate pole pairs and polar initialization**.
 
