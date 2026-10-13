@@ -89,7 +89,7 @@ Correcting the phase factor to $e^{+i\phi}$:
 $$\Re(e^{+i\phi} s_{t+1}) = \sum_{\tau=0}^t e^{-\alpha(t-\tau)} \cos(\omega(t-\tau) + \phi) u_\tau \equiv y[t]$$
 
 ### Empirical Test Result
-In our unit test suite ([`tests/test_kernel.py`](tests/test_kernel.py)):
+In our unit test suite ([`tests/test_kernel.py`](../tests/test_kernel.py)):
 - Paper formula ($e^{-i\phi}$): Error = **2.7673** on the test's fixed drive (seed 42), **1.6417** on another draw (FAILED; magnitude is input-dependent)
 - Corrected formula ($e^{+i\phi}$): Error = **$4.44 \times 10^{-16}$** in float64, and **$< 10^{-6}$** in float32 (PASSED).
 
@@ -105,7 +105,7 @@ In our unit test suite ([`tests/test_kernel.py`](tests/test_kernel.py)):
 | **ResonatorLM (Paper Model)** | None (Translation Invariant) | 3.3223 | 3.3008 | 3.2927 | 64.33% | 64.52% | 64.57% |
 
 ### Diagnosis
-1. The paper's Transformer baseline suffered severe degradation beyond context 256 because learned absolute position embeddings cannot extrapolate beyond the training horizon ($T=256$). Our implementation clamps out-of-range positions to index 255 ([`src/transformer.py`](src/transformer.py)), which is one of several defensible choices for an undefined situation; wrapping or re-initializing would give different magnitudes. This is why our learned-PE numbers (11.17 at 512, 20.00 at 1024) are worse than the paper's own (8.70 and 11.02) rather than identical to them. The direction of the effect is robust to the choice; the exact magnitude is not.
+1. The paper's Transformer baseline suffered severe degradation beyond context 256 because learned absolute position embeddings cannot extrapolate beyond the training horizon ($T=256$). Our implementation clamps out-of-range positions to index 255 ([`src/transformer.py`](../src/transformer.py)), which is one of several defensible choices for an undefined situation; wrapping or re-initializing would give different magnitudes. This is why our learned-PE numbers (11.17 at 512, 20.00 at 1024) are worse than the paper's own (8.70 and 11.02) rather than identical to them. The direction of the effect is robust to the choice; the exact magnitude is not.
 2. When equipped with Rotary Position Embeddings (RoPE), the Transformer's collapse disappears: PPL at 512 is **3.54** (close to 3.21), and accuracy remains **62.37%**.
 3. In-distribution ($T=256$), the RoPE Transformer measures **3.21 vs 3.32 PPL**. On one seed this is not a significant separation: the gap is roughly 1.6$\sigma$ of the paper's reported Transformer seed spread, so we read it as parity rather than a win.
 4. At 1024, ResonatorLM is still substantially ahead of the RoPE Transformer (**3.29 vs 5.59 PPL**). Its zero-shot length generalization survives the stronger baseline.
@@ -126,7 +126,7 @@ With output vector $C = \begin{pmatrix} \cos\phi & -\sin\phi \end{pmatrix}$:
 $$y_{t+1} = C x_{t+1} = \cos\phi a_{t+1} - \sin\phi b_{t+1} = \Re(e^{+i\phi} s_{t+1})$$
 
 ### Numerical Identity
-We implemented this exact state-space formulation in [`src/ssm.py`](src/ssm.py) and evaluated it against `ResonantFieldMixer` in [`tests/test_ssm.py`](tests/test_ssm.py):
+We implemented this exact state-space formulation in [`src/ssm.py`](../src/ssm.py) and evaluated it against `ResonantFieldMixer` in [`tests/test_ssm.py`](../tests/test_ssm.py):
 $$\max |y_{\text{Resonator}} - y_{\text{SSM}}| = 1.51 \times 10^{-14}$$
 ResonatorLM is structurally and algebraically a **diagonal complex State-Space Model with single conjugate pole pairs and polar initialization**.
 
@@ -171,7 +171,7 @@ Both columns are whole-model figures across all 6 layers. The ResonatorLM column
 | **1,024.0** | 25.00% | 0.39% | $2.33 \times 10^{-10}$ | $\approx 0.0$ | $\approx 0.0$ |
 | **2,048.0 (Max Mode)** | 50.00% | 6.25% | $1.53 \times 10^{-5}$ | $2.00 \times 10^{-15}$ | $\mathbf{\approx 10^{-147}}$ |
 
-*Provenance*: these values are produced by `python -m src.synthetic_retrieval` and written to [`results/half_life_decay_audit.csv`](results/half_life_decay_audit.csv), which records the $2048$-token mode at 1M tokens as `1.0296685067553232e-147`. The console view prints `~0.0` for anything below $10^{-15}$; the CSV carries full precision down to IEEE-754 underflow.
+*Provenance*: these values are produced by `python -m src.synthetic_retrieval` and written to [`results/half_life_decay_audit.csv`](../results/half_life_decay_audit.csv), which records the $2048$-token mode at 1M tokens as `1.0296685067553232e-147`. The console view prints `~0.0` for anything below $10^{-15}$; the CSV carries full precision down to IEEE-754 underflow.
 
 ### Scientific Conclusion on 1M Context
 The parameterization $\alpha_h = 10^{-4} + \text{softplus}(\tilde{\alpha}_h)$ makes $\alpha_h \ge 10^{-4}$, so no head can exceed $t_{1/2} \approx 6{,}931$ tokens; the $2{,}048$ figure is the initialization ceiling and the value the paper reports as learned. At $t_{1/2} = 2048$, amplitude at 32K is attenuated by $65,536\times$ and at 1M reaches $1.03 \times 10^{-147}$. Even at the $6{,}931$ architectural ceiling, 1M-token amplitude is only $3.7 \times 10^{-44}$. Linear resonant modes **cannot directly preserve token information across 100K or 1M tokens**. Claims of scaling to 1M context must rely on external memory, nonlinear multilayer interactions, or recurrence updates that continually amplify signals.
