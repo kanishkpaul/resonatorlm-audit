@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+message: "If you use this implementation or audit, please cite this repository. Cite the original ResonatorLM paper separately."
+type: software
+title: "ResonatorLM Audit: Independent Replication and Numerical Verification"
+authors:
+  - family-names: Paul
+    given-names: Kanishk
+repository-code: "https://github.com/kanishkpaul/resonatorlm-audit"
+url: "https://github.com/kanishkpaul/resonatorlm-audit"
+license: MIT

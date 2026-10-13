@@ -5,3 +5,6 @@ __pycache__/
 scratch/
 checkpoints/*.pt
 data/wikitext-2-raw/
+*.egg-info/
+build/
+dist/
